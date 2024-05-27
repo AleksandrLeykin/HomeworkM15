@@ -13,7 +13,8 @@ class Chat {
         ~Chat();
         void reg(char _login[LOGINLENGTH], char _pass[], int pass_length);
         bool login(char _login[LOGINLENGTH], char _pass[], int pass_length);
-                
+        void print();
+                        
     private:
         enum enDataStatus {
             free, // свободен
@@ -36,7 +37,7 @@ class Chat {
             }
 
             AuthData& operator = (const AuthData& other) {
-                strcpy(login, other.login);
+                strcpy_s(login, other.login);
                 status = other.status;
                 if(pass_sha1_hash != 0)
                     delete [] pass_sha1_hash;

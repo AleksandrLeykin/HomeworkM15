@@ -10,10 +10,12 @@ Chat::Chat() {
 Chat::~Chat()
 {
     delete[] data;
+ 
 }
 // регистрация
 void Chat::reg(char _login[LOGINLENGTH], char _pass[], int pass_length) {    
-    int index = -1, i = 0;
+    int index = -1;
+    int i = 0;
     // находим место
     for(;  i < mem_size; ++i)
     {
@@ -21,11 +23,12 @@ void Chat::reg(char _login[LOGINLENGTH], char _pass[], int pass_length) {
         if (data[index].status != enDataStatus::engaged)
             break;
     }
-    if (i >= mem_size) //return; 
+    if (i >= mem_size) //return;
     resize();
 
      data[index] = AuthData(_login, sha1(_pass, pass_length));
      data_count++;
+     data[index].status = enDataStatus::engaged;
 }
 // вход по логину и паролю
 bool Chat::login(char _login[LOGINLENGTH], char _pass[], int pass_length) {
@@ -49,11 +52,19 @@ bool Chat::login(char _login[LOGINLENGTH], char _pass[], int pass_length) {
     return cmpHashes;
 }
 
+void Chat::print()
+{
+    for (int i = 0; i < mem_size; i++)
+    {
+        std::cout << i + 1 << ": " << data[i].login << std::endl;
+    }
+}
+
 int Chat::hash_func(const char* login, int offset)
 {
     int res = 0, i = 0;
     for (; i < strlen(login); ++i)
-        res *= login[i];
+        res += login[i] * login[i];
     return (res % mem_size + offset * offset) % mem_size;
 }
 
@@ -74,20 +85,21 @@ void Chat::resize()
         AuthData& current = saveData[i];
        
             if (current.status == enDataStatus::engaged) {
-                int index = hash_func(current.login, j);
-                if (data[index].status != enDataStatus::engaged) {
-                    data[index] = current;
-                    data_count++;
-                    data[index].status = enDataStatus::engaged;
-                }
-                else
-                {
-                    j++;
+                bool ex = true;
+                while (ex) {
                     int index = hash_func(current.login, j);
-                    data[index] = current;
-                    data_count++;
-                    data[index].status = enDataStatus::engaged;
+                    if (data[index].status != enDataStatus::engaged) {
+                        data[index] = current;
+                        data_count++;
+                        data[index].status = enDataStatus::engaged;
+                        ex = false;
+                    }
+                    else
+                    {
+                        j += 2;
+                    }
                 }
             }
     }
+    delete[] saveData;
 }
